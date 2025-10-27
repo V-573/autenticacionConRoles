@@ -6,6 +6,10 @@ const mongoose = require('mongoose');
 
 const router = express.Router();
 
+// Importar middlewares centralizados
+const { authenticateToken } = require('../middleware/auth');
+
+
 // IMPORTANTE: usamos el mismo secreto por compatibilidad.
 // Idealmente vendrá de process.env.JWT_SECRET.
 const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_super_segura_aqui';
@@ -15,18 +19,20 @@ const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_super_segura_aqui
 const User = () => mongoose.model('User');
 
 // Middleware local para este router: validar token
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+// function authenticateToken(req, res, next) {
+//   const authHeader = req.headers['authorization'];
+//   const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token) return res.status(401).json({ error: 'Token no proporcionado' });
+//   if (!token) return res.status(401).json({ error: 'Token no proporcionado' });
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Token inválido' });
-    req.user = user;
-    next();
-  });
-}
+//   jwt.verify(token, JWT_SECRET, (err, user) => {
+//     if (err) return res.status(403).json({ error: 'Token inválido' });
+//     req.user = user;
+//     next();
+//   });
+// }
+
+
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {

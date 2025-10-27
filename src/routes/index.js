@@ -5,10 +5,7 @@ const router = express.Router();
 
 // routers hijos
 const authRouter = require('./auth.routes');
-
-
-
-
+const usersRouter = require('./users.routes');
 
 
 
@@ -18,11 +15,11 @@ router.get('/health', (req, res) => {
 });
 
 
-
-
-
 // montar /auth/*
 router.use('/auth', authRouter);
+
+// montar /users/*
+router.use('/users', usersRouter);
 
 
 module.exports = router;

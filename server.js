@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+// Importar middlewares centralizados
+const { authenticateToken, requireAdmin } = require('./src/middleware/auth');
 
 const app = express();
 const PORT = 3000;
@@ -68,38 +70,38 @@ const Book = mongoose.model('Book', bookSchema);
 // ==================== MIDDLEWARE DE AUTENTICACIÓN ====================
 
 // Verificar token JWT
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+// const authenticateToken = (req, res, next) => {
+//   const authHeader = req.headers['authorization'];
+//   const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token) {
-    return res.status(401).json({ error: 'Token no proporcionado' });
-  }
+//   if (!token) {
+//     return res.status(401).json({ error: 'Token no proporcionado' });
+//   }
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ error: 'Token inválido' });
-    }
-    req.user = user;
-    next();
-  });
-};
+//   jwt.verify(token, JWT_SECRET, (err, user) => {
+//     if (err) {
+//       return res.status(403).json({ error: 'Token inválido' });
+//     }
+//     req.user = user;
+//     next();
+//   });
+// };
 
 // Verificar rol de admin
-const requireAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Acceso denegado. Se requiere rol de admin' });
-  }
-  next();
-};
+// const requireAdmin = (req, res, next) => {
+//   if (req.user.role !== 'admin') {
+//     return res.status(403).json({ error: 'Acceso denegado. Se requiere rol de admin' });
+//   }
+//   next();
+// };
 
 // Verificar rol VIP o admin
-const requireVIP = (req, res, next) => {
-  if (req.user.role !== 'vip' && req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Acceso denegado. Contenido exclusivo para usuarios VIP' });
-  }
-  next();
-};
+// const requireVIP = (req, res, next) => {
+//   if (req.user.role !== 'vip' && req.user.role !== 'admin') {
+//     return res.status(403).json({ error: 'Acceso denegado. Contenido exclusivo para usuarios VIP' });
+//   }
+//   next();
+// };
 
 // ==================== RUTAS DE AUTENTICACIÓN ====================
 
@@ -200,84 +202,84 @@ const requireVIP = (req, res, next) => {
 // ==================== RUTAS DE GESTIÓN DE USUARIOS (ADMIN) ====================
 
 // Obtener todos los usuarios (solo admin)
-app.get('/api/users', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const users = await User.find().select('-password');
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener usuarios' });
-  }
-});
+// app.get('/api/users', authenticateToken, requireAdmin, async (req, res) => {
+//   try {
+//     const users = await User.find().select('-password');
+//     res.json(users);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al obtener usuarios' });
+//   }
+// });
 
 // Crear usuario admin (solo admin)
-app.post('/api/users/admin', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { username, email, password, role } = req.body;
+// app.post('/api/users/admin', authenticateToken, requireAdmin, async (req, res) => {
+//   try {
+//     const { username, email, password, role } = req.body;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+//     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new User({
-      username,
-      email,
-      password: hashedPassword,
-      role: role || 'admin'
-    });
+//     const newUser = new User({
+//       username,
+//       email,
+//       password: hashedPassword,
+//       role: role || 'admin'
+//     });
 
-    await newUser.save();
+//     await newUser.save();
 
-    res.status(201).json({ 
-      message: 'Usuario creado exitosamente',
-      user: { 
-        id: newUser._id, 
-        username: newUser.username, 
-        email: newUser.email, 
-        role: newUser.role 
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al crear usuario: ' + error.message });
-  }
-});
+//     res.status(201).json({ 
+//       message: 'Usuario creado exitosamente',
+//       user: { 
+//         id: newUser._id, 
+//         username: newUser.username, 
+//         email: newUser.email, 
+//         role: newUser.role 
+//       }
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al crear usuario: ' + error.message });
+//   }
+// });
 
 // Actualizar rol de usuario (solo admin)
-app.put('/api/users/:id/role', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { role } = req.body;
+// app.put('/api/users/:id/role', authenticateToken, requireAdmin, async (req, res) => {
+//   try {
+//     const { role } = req.body;
     
-    if (!['admin', 'vip', 'free'].includes(role)) {
-      return res.status(400).json({ error: 'Rol inválido' });
-    }
+//     if (!['admin', 'vip', 'free'].includes(role)) {
+//       return res.status(400).json({ error: 'Rol inválido' });
+//     }
 
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { role },
-      { new: true }
-    ).select('-password');
+//     const user = await User.findByIdAndUpdate(
+//       req.params.id,
+//       { role },
+//       { new: true }
+//     ).select('-password');
 
-    if (!user) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
+//     if (!user) {
+//       return res.status(404).json({ error: 'Usuario no encontrado' });
+//     }
 
-    res.json({ message: 'Rol actualizado', user });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar rol' });
-  }
-});
+//     res.json({ message: 'Rol actualizado', user });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al actualizar rol' });
+//   }
+// });
 
 // Eliminar usuario (solo admin)
-app.delete('/api/users/:id', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const user = await User.findByIdAndDelete(req.params.id);
+// app.delete('/api/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+//   try {
+//     const user = await User.findByIdAndDelete(req.params.id);
     
-    if (!user) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
+//     if (!user) {
+//       return res.status(404).json({ error: 'Usuario no encontrado' });
+//     }
 
-    res.json({ message: 'Usuario eliminado exitosamente' });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al eliminar usuario' });
-  }
-});
+//     res.json({ message: 'Usuario eliminado exitosamente' });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al eliminar usuario' });
+//   }
+// });
 
 // ==================== RUTAS DE LIBROS ====================
 

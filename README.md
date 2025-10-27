@@ -27,3 +27,11 @@ Lo anterior es la prueba funcional de la ruta sin problemas, ahora el siguiente 
 Paso2: Crearás src/routes/auth.routes.js con tres endpoints: register, login y profile. Lo montare en index.js bajo auth/
 Comentarás temporalmente las rutas originales en server.js para evitar duplicados.
 Probarás los endpoints.
+
+
+paso 3: 
+Centralizar middlewares: crear src/middleware/auth.js con authenticateToken, requireAdmin, requireVIP.
+Crear router de usuarios: src/routes/users.routes.js con las 4 rutas de gestión de usuarios.
+Montar el router en index.js.
+Desactivar rutas duplicadas en server.js.
+Probar los endpoints.
