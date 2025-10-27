@@ -9,13 +9,21 @@ const app = express();
 const PORT = 3000;
 const JWT_SECRET = 'tu_clave_secreta_super_segura_aqui'; // Cambiar en producción
 
+
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 
+
+
 // Servir archivos estáticos desde la carpeta public
 app.use(express.static('public'));
 
+
+// Montar router principal de API
+const apiRouter = require('./src/routes'); // resuelve a src/routes/index.js
+app.use('/api', apiRouter); //monto el router en la ruta /api
 
 // Conexión a MongoDB
 //mongoose.connect('mongodb://localhost:27017/biblioteca', {
@@ -95,97 +103,99 @@ const requireVIP = (req, res, next) => {
 
 // ==================== RUTAS DE AUTENTICACIÓN ====================
 
+
+//Esto se elimina porque se pasa al archivo auth.routes.js de la ruta src/routes/auth.routes.js
 // REGISTRO de usuario
-app.post('/api/auth/register', async (req, res) => {
-  try {
-    const { username, email, password, role } = req.body;
+// app.post('/api/auth/register', async (req, res) => {
+//   try {
+//     const { username, email, password, role } = req.body;
 
-    // Validaciones
-    if (!username || !email || !password) {
-      return res.status(400).json({ error: 'Todos los campos son requeridos' });
-    }
+//     // Validaciones
+//     if (!username || !email || !password) {
+//       return res.status(400).json({ error: 'Todos los campos son requeridos' });
+//     }
 
-    // Verificar si el usuario ya existe
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-    if (existingUser) {
-      return res.status(400).json({ error: 'El usuario o email ya existe' });
-    }
+//     // Verificar si el usuario ya existe
+//     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+//     if (existingUser) {
+//       return res.status(400).json({ error: 'El usuario o email ya existe' });
+//     }
 
-    // Encriptar contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
+//     // Encriptar contraseña
+//     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Crear usuario (por defecto será 'free')
-    const user = new User({
-      username,
-      email,
-      password: hashedPassword,
-      role: role || 'free'
-    });
+//     // Crear usuario (por defecto será 'free')
+//     const user = new User({
+//       username,
+//       email,
+//       password: hashedPassword,
+//       role: role || 'free'
+//     });
 
-    await user.save();
+//     await user.save();
 
-    res.status(201).json({ 
-      message: 'Usuario registrado exitosamente',
-      user: { 
-        id: user._id, 
-        username: user.username, 
-        email: user.email, 
-        role: user.role 
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al registrar usuario: ' + error.message });
-  }
-});
+//     res.status(201).json({ 
+//       message: 'Usuario registrado exitosamente',
+//       user: { 
+//         id: user._id, 
+//         username: user.username, 
+//         email: user.email, 
+//         role: user.role 
+//       }
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al registrar usuario: ' + error.message });
+//   }
+// });
 
 // LOGIN de usuario
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
+// app.post('/api/auth/login', async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
 
-    // Buscar usuario
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
+//     // Buscar usuario
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       return res.status(401).json({ error: 'Credenciales inválidas' });
+//     }
 
-    // Verificar contraseña
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
+//     // Verificar contraseña
+//     const isValidPassword = await bcrypt.compare(password, user.password);
+//     if (!isValidPassword) {
+//       return res.status(401).json({ error: 'Credenciales inválidas' });
+//     }
 
-    // Generar token JWT
-    const token = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+//     // Generar token JWT
+//     const token = jwt.sign(
+//       { id: user._id, username: user.username, role: user.role },
+//       JWT_SECRET,
+//       { expiresIn: '24h' }
+//     );
 
-    res.json({
-      message: 'Login exitoso',
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al iniciar sesión: ' + error.message });
-  }
-});
+//     res.json({
+//       message: 'Login exitoso',
+//       token,
+//       user: {
+//         id: user._id,
+//         username: user.username,
+//         email: user.email,
+//         role: user.role
+//       }
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al iniciar sesión: ' + error.message });
+//   }
+// });
 
 // Obtener perfil del usuario autenticado
-app.get('/api/auth/profile', authenticateToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password');
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener perfil' });
-  }
-});
+// app.get('/api/auth/profile', authenticateToken, async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user.id).select('-password');
+//     res.json(user);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al obtener perfil' });
+//   }
+// });
 
 // ==================== RUTAS DE GESTIÓN DE USUARIOS (ADMIN) ====================
 
