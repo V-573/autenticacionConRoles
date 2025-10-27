@@ -9,7 +9,7 @@ const { authenticateToken, requireAdmin } = require('./src/middleware/auth');
 
 const app = express();
 const PORT = 3000;
-const JWT_SECRET = 'tu_clave_secreta_super_segura_aqui'; // Cambiar en producción
+//const JWT_SECRET = 'tu_clave_secreta_super_segura_aqui'; // Cambiar en producción
 
 
 
@@ -284,106 +284,106 @@ const Book = mongoose.model('Book', bookSchema);
 // ==================== RUTAS DE LIBROS ====================
 
 // Obtener todos los libros (filtrado por rol)
-app.get('/api/books', authenticateToken, async (req, res) => {
-  try {
-    let query = {};
+// app.get('/api/books', authenticateToken, async (req, res) => {
+//   try {
+//     let query = {};
     
-    // Si el usuario es FREE, solo puede ver libros no exclusivos
-    if (req.user.role === 'free') {
-      query.isExclusive = false;
-    }
-    // VIP y ADMIN pueden ver todos los libros
+//     // Si el usuario es FREE, solo puede ver libros no exclusivos
+//     if (req.user.role === 'free') {
+//       query.isExclusive = false;
+//     }
+//     // VIP y ADMIN pueden ver todos los libros
 
-    const books = await Book.find(query).populate('createdBy', 'username');
-    res.json(books);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener libros' });
-  }
-});
+//     const books = await Book.find(query).populate('createdBy', 'username');
+//     res.json(books);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al obtener libros' });
+//   }
+// });
 
 // Obtener un libro por ID
-app.get('/api/books/:id', authenticateToken, async (req, res) => {
-  try {
-    const book = await Book.findById(req.params.id).populate('createdBy', 'username');
+// app.get('/api/books/:id', authenticateToken, async (req, res) => {
+//   try {
+//     const book = await Book.findById(req.params.id).populate('createdBy', 'username');
     
-    if (!book) {
-      return res.status(404).json({ error: 'Libro no encontrado' });
-    }
+//     if (!book) {
+//       return res.status(404).json({ error: 'Libro no encontrado' });
+//     }
 
-    // Verificar si el usuario tiene acceso
-    if (book.isExclusive && req.user.role === 'free') {
-      return res.status(403).json({ error: 'Este libro es exclusivo para usuarios VIP' });
-    }
+//     // Verificar si el usuario tiene acceso
+//     if (book.isExclusive && req.user.role === 'free') {
+//       return res.status(403).json({ error: 'Este libro es exclusivo para usuarios VIP' });
+//     }
 
-    res.json(book);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener libro' });
-  }
-});
+//     res.json(book);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al obtener libro' });
+//   }
+// });
 
 // Crear libro (solo admin)
-app.post('/api/books', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { title, author, description, year, genre, isExclusive, coverUrl } = req.body;
+// app.post('/api/books', authenticateToken, requireAdmin, async (req, res) => {
+//   try {
+//     const { title, author, description, year, genre, isExclusive, coverUrl } = req.body;
 
-    const book = new Book({
-      title,
-      author,
-      description,
-      year,
-      genre,
-      isExclusive: isExclusive || false,
-      coverUrl,
-      createdBy: req.user.id
-    });
+//     const book = new Book({
+//       title,
+//       author,
+//       description,
+//       year,
+//       genre,
+//       isExclusive: isExclusive || false,
+//       coverUrl,
+//       createdBy: req.user.id
+//     });
 
-    await book.save();
+//     await book.save();
 
-    res.status(201).json({ 
-      message: 'Libro creado exitosamente',
-      book 
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al crear libro: ' + error.message });
-  }
-});
+//     res.status(201).json({ 
+//       message: 'Libro creado exitosamente',
+//       book 
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al crear libro: ' + error.message });
+//   }
+// });
 
 // Actualizar libro (solo admin)
-app.put('/api/books/:id', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const book = await Book.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+// app.put('/api/books/:id', authenticateToken, requireAdmin, async (req, res) => {
+//   try {
+//     const book = await Book.findByIdAndUpdate(
+//       req.params.id,
+//       req.body,
+//       { new: true }
+//     );
 
-    if (!book) {
-      return res.status(404).json({ error: 'Libro no encontrado' });
-    }
+//     if (!book) {
+//       return res.status(404).json({ error: 'Libro no encontrado' });
+//     }
 
-    res.json({ message: 'Libro actualizado', book });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar libro' });
-  }
-});
+//     res.json({ message: 'Libro actualizado', book });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al actualizar libro' });
+//   }
+// });
 
 // Eliminar libro (solo admin)
-app.delete('/api/books/:id', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const book = await Book.findByIdAndDelete(req.params.id);
+// app.delete('/api/books/:id', authenticateToken, requireAdmin, async (req, res) => {
+//   try {
+//     const book = await Book.findByIdAndDelete(req.params.id);
     
-    if (!book) {
-      return res.status(404).json({ error: 'Libro no encontrado' });
-    }
+//     if (!book) {
+//       return res.status(404).json({ error: 'Libro no encontrado' });
+//     }
 
-    res.json({ message: 'Libro eliminado exitosamente' });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al eliminar libro' });
-  }
-});
+//     res.json({ message: 'Libro eliminado exitosamente' });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al eliminar libro' });
+//   }
+// });
+
 
 // ==================== RUTA PARA CREAR ADMIN INICIAL ====================
-
 // Esta ruta debe usarse SOLO UNA VEZ para crear el primer admin
 app.post('/api/init/admin', async (req, res) => {
   try {

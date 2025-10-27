@@ -35,3 +35,9 @@ Crear router de usuarios: src/routes/users.routes.js con las 4 rutas de gestión
 Montar el router en index.js.
 Desactivar rutas duplicadas en server.js.
 Probar los endpoints.
+
+paso 4:
+Crearás src/routes/books.routes.js con 5 endpoints (lista, detalle, crear, actualizar, eliminar).
+Lo montarás en index.js bajo /books.
+Comentarás las rutas originales de libros en server.js para evitar duplicados.
+Probarás los endpoints con un token válido.

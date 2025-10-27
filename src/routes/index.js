@@ -6,7 +6,7 @@ const router = express.Router();
 // routers hijos
 const authRouter = require('./auth.routes');
 const usersRouter = require('./users.routes');
-
+const booksRouter = require('./books.routes');
 
 
 // Endpoint de salud para verificar el enrutador
@@ -21,5 +21,7 @@ router.use('/auth', authRouter);
 // montar /users/*
 router.use('/users', usersRouter);
 
+// montar /books/*
+router.use('/books', booksRouter);
 
 module.exports = router;
