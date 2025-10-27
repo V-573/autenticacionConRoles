@@ -395,37 +395,37 @@ connectDB();
 
 // ==================== RUTA PARA CREAR ADMIN INICIAL ====================
 // Esta ruta debe usarse SOLO UNA VEZ para crear el primer admin
-app.post('/api/init/admin', async (req, res) => {
-  try {
-    // Verificar si ya existe un admin
-    const adminExists = await User.findOne({ role: 'admin' });
-    if (adminExists) {
-      return res.status(400).json({ error: 'Ya existe un usuario administrador' });
-    }
+// app.post('/api/init/admin', async (req, res) => {
+//   try {
+//     // Verificar si ya existe un admin
+//     const adminExists = await User.findOne({ role: 'admin' });
+//     if (adminExists) {
+//       return res.status(400).json({ error: 'Ya existe un usuario administrador' });
+//     }
 
-    const hashedPassword = await bcrypt.hash('admin123', 10);
+//     const hashedPassword = await bcrypt.hash('admin123', 10);
 
-    const adminUser = new User({
-      username: 'admin',
-      email: 'admin@biblioteca.com',
-      password: hashedPassword,
-      role: 'admin'
-    });
+//     const adminUser = new User({
+//       username: 'admin',
+//       email: 'admin@biblioteca.com',
+//       password: hashedPassword,
+//       role: 'admin'
+//     });
 
-    await adminUser.save();
+//     await adminUser.save();
 
-    res.status(201).json({ 
-      message: 'Administrador inicial creado',
-      credentials: {
-        email: 'admin@biblioteca.com',
-        password: 'admin123',
-        warning: '⚠️ CAMBIAR CONTRASEÑA INMEDIATAMENTE'
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al crear admin: ' + error.message });
-  }
-});
+//     res.status(201).json({ 
+//       message: 'Administrador inicial creado',
+//       credentials: {
+//         email: 'admin@biblioteca.com',
+//         password: 'admin123',
+//         warning: '⚠️ CAMBIAR CONTRASEÑA INMEDIATAMENTE'
+//       }
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al crear admin: ' + error.message });
+//   }
+// });
 
 // ==================== INICIAR SERVIDOR ====================
 
@@ -433,5 +433,6 @@ app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
   console.log(`📚 Base de datos: MongoDB - biblioteca`);
   console.log(`\n📝 Para crear el admin inicial, ejecuta:`);
-  console.log(`   POST http://localhost:${PORT}/api/init/admin`);
+  // console.log(`   POST http://localhost:${PORT}/api/init/admin`);
+    console.log(`   npm run create-admin`);
 });
