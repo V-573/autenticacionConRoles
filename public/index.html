@@ -533,27 +533,63 @@
         }
 
         // ==================== UI FUNCTIONS ====================
+//estaba presentando un error al crear un libro desde admin. lo reemplazo con el codigo actual
+        // function showTab(tabName) {
+        //     // Hide all tabs
+        //     document.querySelectorAll('.tab-content').forEach(content => {
+        //         content.classList.remove('active');
+        //     });
+        //     document.querySelectorAll('.tab').forEach(tab => {
+        //         tab.classList.remove('active');
+        //     });
 
-        function showTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
+        //     // Show selected tab
+        //     document.getElementById(tabName + 'Content').classList.add('active');
+        //     event.target.classList.add('active');
 
-            // Show selected tab
-            document.getElementById(tabName + 'Content').classList.add('active');
-            event.target.classList.add('active');
+        //     // Load data if needed
+        //     if (tabName === 'users') {
+        //         loadUsers();
+        //     } else if (tabName === 'books') {
+        //         loadBooks();
+        //     }
+        // }
 
-            // Load data if needed
-            if (tabName === 'users') {
-                loadUsers();
-            } else if (tabName === 'books') {
-                loadBooks();
+function showTab(tabName, clickEvent) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Show selected tab
+    document.getElementById(tabName + 'Content').classList.add('active');
+    
+    // Si se llamó desde un click, activar el tab clickeado
+    // Si se llamó programáticamente, buscar el tab correspondiente
+    if (clickEvent && clickEvent.target) {
+        clickEvent.target.classList.add('active');
+    } else {
+        // Buscar el botón tab correspondiente por el atributo onclick
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            if (tab.getAttribute('onclick')?.includes(`'${tabName}'`)) {
+                tab.classList.add('active');
             }
-        }
+        });
+    }
+
+    // Load data if needed
+    if (tabName === 'users') {
+        loadUsers();
+    } else if (tabName === 'books') {
+        loadBooks();
+    }
+}
+
+
 
         function showAlert(message, type) {
             const alertDiv = document.getElementById('alertMessage');

@@ -4,6 +4,12 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+// Importar modelos
+//require('./src/models'); // Esto registra User y Book en mongoose
+// Importar modelos de forma explícita si es necesario:
+ const User = require('./src/models/User');
+ const Book = require('./src/models/Book');
+
 // Importar middlewares centralizados
 const { authenticateToken, requireAdmin } = require('./src/middleware/auth');
 
@@ -37,35 +43,37 @@ mongoose.connect('mongodb+srv://vaj573cali:abc54321@cluster0.7xbo2v1.mongodb.net
 
 // ==================== SCHEMAS Y MODELOS ====================
 
-// Schema de Usuario
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { 
-    type: String, 
-    enum: ['admin', 'vip', 'free'], 
-    default: 'free' 
-  },
-  createdAt: { type: Date, default: Date.now }
-});
 
-const User = mongoose.model('User', userSchema);
+
+// Schema de Usuario
+// const userSchema = new mongoose.Schema({
+//   username: { type: String, required: true, unique: true },
+//   email: { type: String, required: true, unique: true },
+//   password: { type: String, required: true },
+//   role: { 
+//     type: String, 
+//     enum: ['admin', 'vip', 'free'], 
+//     default: 'free' 
+//   },
+//   createdAt: { type: Date, default: Date.now }
+// });
+
+// const User = mongoose.model('User', userSchema);
 
 // Schema de Libro
-const bookSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  author: { type: String, required: true },
-  description: { type: String },
-  year: { type: Number },
-  genre: { type: String },
-  isExclusive: { type: Boolean, default: false }, // Solo para VIP
-  coverUrl: { type: String },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  createdAt: { type: Date, default: Date.now }
-});
+// const bookSchema = new mongoose.Schema({
+//   title: { type: String, required: true },
+//   author: { type: String, required: true },
+//   description: { type: String },
+//   year: { type: Number },
+//   genre: { type: String },
+//   isExclusive: { type: Boolean, default: false }, // Solo para VIP
+//   coverUrl: { type: String },
+//   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+//   createdAt: { type: Date, default: Date.now }
+// });
 
-const Book = mongoose.model('Book', bookSchema);
+// const Book = mongoose.model('Book', bookSchema);
 
 // ==================== MIDDLEWARE DE AUTENTICACIÓN ====================
 
