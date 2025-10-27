@@ -1,9 +1,11 @@
+require('dotenv').config();
 // server.js - Backend con Node.js, Express y MongoDB
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const connectDB = require('./src/config/database');
 // Importar modelos
 //require('./src/models'); // Esto registra User y Book en mongoose
 // Importar modelos de forma explícita si es necesario:
@@ -14,7 +16,7 @@ const cors = require('cors');
 const { authenticateToken, requireAdmin } = require('./src/middleware/auth');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 //const JWT_SECRET = 'tu_clave_secreta_super_segura_aqui'; // Cambiar en producción
 
 
@@ -35,12 +37,12 @@ app.use('/api', apiRouter); //monto el router en la ruta /api
 
 // Conexión a MongoDB
 //mongoose.connect('mongodb://localhost:27017/biblioteca', {
-mongoose.connect('mongodb+srv://vaj573cali:abc54321@cluster0.7xbo2v1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => console.log('✅ Conectado a MongoDB'))
-  .catch(err => console.error('❌ Error de conexión:', err));
-
+// mongoose.connect('mongodb+srv://vaj573cali:abc54321@cluster0.7xbo2v1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true
+// }).then(() => console.log('✅ Conectado a MongoDB'))
+//   .catch(err => console.error('❌ Error de conexión:', err));
+connectDB();
 // ==================== SCHEMAS Y MODELOS ====================
 
 

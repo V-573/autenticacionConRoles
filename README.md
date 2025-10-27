@@ -41,3 +41,11 @@ Crearás src/routes/books.routes.js con 5 endpoints (lista, detalle, crear, actu
 Lo montarás en index.js bajo /books.
 Comentarás las rutas originales de libros en server.js para evitar duplicados.
 Probarás los endpoints con un token válido.
+
+paso 5: se crean los modelos de schema en la carpeta models
+
+Paso 6: 
+Plan
+Crear src/config/database.js con la configuración y conexión a MongoDB.
+Actualizar server.js para importar y usar esta configuración.
+Probar que todo sigue funcionando.
