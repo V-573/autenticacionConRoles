@@ -8,6 +8,7 @@ const router = express.Router();
 
 // Importar middlewares centralizados
 const { authenticateToken } = require('../middleware/auth');
+const authController = require('../controllers/authController');
 
 
 // IMPORTANTE: usamos el mismo secreto por compatibilidad.
@@ -35,83 +36,98 @@ const User = () => mongoose.model('User');
 
 
 // POST /api/auth/register
-router.post('/register', async (req, res) => {
-  try {
-    const { username, email, password, role } = req.body;
-    if (!username || !email || !password) {
-      return res.status(400).json({ error: 'Todos los campos son requeridos' });
-    }
 
-    const existingUser = await User().findOne({ $or: [{ email }, { username }] });
-    if (existingUser) {
-      return res.status(400).json({ error: 'El usuario o email ya existe' });
-    }
+router.post('/register', authController.register);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = new (User())({
-      username,
-      email,
-      password: hashedPassword,
-      role: role || 'free',
-    });
+// POST /api/auth/register
 
-    await user.save();
+// router.post('/register', async (req, res) => {
+//   try {
+//     const { username, email, password, role } = req.body;
+//     if (!username || !email || !password) {
+//       return res.status(400).json({ error: 'Todos los campos son requeridos' });
+//     }
 
-    res.status(201).json({
-      message: 'Usuario registrado exitosamente',
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al registrar usuario: ' + error.message });
-  }
-});
+//     const existingUser = await User().findOne({ $or: [{ email }, { username }] });
+//     if (existingUser) {
+//       return res.status(400).json({ error: 'El usuario o email ya existe' });
+//     }
+
+//     const hashedPassword = await bcrypt.hash(password, 10);
+
+//     const user = new (User())({
+//       username,
+//       email,
+//       password: hashedPassword,
+//       role: role || 'free',
+//     });
+
+//     await user.save();
+
+//     res.status(201).json({
+//       message: 'Usuario registrado exitosamente',
+//       user: {
+//         id: user._id,
+//         username: user.username,
+//         email: user.email,
+//         role: user.role,
+//       },
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al registrar usuario: ' + error.message });
+//   }
+// });
+
+
 
 // POST /api/auth/login
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
+router.post('/login', authController.login);
 
-    const user = await User().findOne({ email });
-    if (!user) return res.status(401).json({ error: 'Credenciales inválidas' });
+// POST /api/auth/login
+// router.post('/login', async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) return res.status(401).json({ error: 'Credenciales inválidas' });
+//     const user = await User().findOne({ email });
+//     if (!user) return res.status(401).json({ error: 'Credenciales inválidas' });
 
-    const token = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+//     const isValidPassword = await bcrypt.compare(password, user.password);
+//     if (!isValidPassword) return res.status(401).json({ error: 'Credenciales inválidas' });
 
-    res.json({
-      message: 'Login exitoso',
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al iniciar sesión: ' + error.message });
-  }
-});
+//     const token = jwt.sign(
+//       { id: user._id, username: user.username, role: user.role },
+//       JWT_SECRET,
+//       { expiresIn: '24h' }
+//     );
+
+//     res.json({
+//       message: 'Login exitoso',
+//       token,
+//       user: {
+//         id: user._id,
+//         username: user.username,
+//         email: user.email,
+//         role: user.role,
+//       },
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al iniciar sesión: ' + error.message });
+//   }
+// });
 
 // GET /api/auth/profile
-router.get('/profile', authenticateToken, async (req, res) => {
-  try {
-    const user = await User().findById(req.user.id).select('-password');
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener perfil' });
-  }
-});
+router.get('/profile', authenticateToken, authController.getProfile);
+
+
+// GET /api/auth/profile
+// router.get('/profile', authenticateToken, async (req, res) => {
+//   try {
+//     const user = await User().findById(req.user.id).select('-password');
+//     res.json(user);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Error al obtener perfil' });
+//   }
+// });
 
 module.exports = router;
