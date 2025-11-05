@@ -165,450 +165,51 @@
         </div>
     </div>
 
-
+    <!-- Scripts de los módulos -->
+    <script src="js/config.js"></script>
+    <script src="js/utils/api.js"></script>
+    <script src="js/utils/ui.js"></script>
+    <script src="js/modules/auth.js"></script>
+    <script src="js/modules/books.js"></script>
+    <script src="js/modules/users.js"></script>
 
     <script>
-        const API_URL = 'http://localhost:3000/api';
-        let currentUser = null;
-        let authToken = null;
-        let isLoginMode = true;
-
-        // ==================== AUTH FUNCTIONS ====================
-
+        // ==================== AUTH EVENT LISTENERS ====================
+        // Los event listeners de auth se mantienen aquí para conectar con las funciones de auth.js
+        
         document.getElementById('authForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            if (isLoginMode) {
-                await login();
+            if (window.isLoginMode) {
+                await window.login();
             } else {
-                await register();
+                await window.register();
             }
         });
 
         document.getElementById('switchLink').addEventListener('click', (e) => {
             e.preventDefault();
-            toggleAuthMode();
+            window.toggleAuthMode();
         });
 
-        function toggleAuthMode() {
-            isLoginMode = !isLoginMode;
-            const usernameGroup = document.getElementById('usernameGroup');
-            const authTitle = document.getElementById('authTitle');
-            const authButton = document.getElementById('authButton');
-            const switchText = document.getElementById('switchText');
-            const switchLink = document.getElementById('switchLink');
-
-            if (isLoginMode) {
-                usernameGroup.classList.add('hidden');
-                authTitle.textContent = 'Iniciar Sesión';
-                authButton.textContent = 'Iniciar Sesión';
-                switchText.innerHTML = '¿No tienes cuenta? <a href="#" id="switchLink">Regístrate</a>';
-            } else {
-                usernameGroup.classList.remove('hidden');
-                authTitle.textContent = 'Registrarse';
-                authButton.textContent = 'Registrarse';
-                switchText.innerHTML = '¿Ya tienes cuenta? <a href="#" id="switchLink">Inicia Sesión</a>';
-            }
-            
-            document.getElementById('switchLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                toggleAuthMode();
-            });
-            
-            clearAlert();
-        }
-
-        async function login() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                const response = await fetch(`${API_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    showAlert(data.error, 'error');
-                    return;
-                }
-
-                authToken = data.token;
-                currentUser = data.user;
-                
-                showAlert('¡Login exitoso!', 'success');
-                setTimeout(() => {
-                    showApp();
-                }, 1000);
-            } catch (error) {
-                showAlert('Error de conexión: ' + error.message, 'error');
-            }
-        }
-
-        async function register() {
-            const username = document.getElementById('username').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                const response = await fetch(`${API_URL}/auth/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, email, password })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    showAlert(data.error, 'error');
-                    return;
-                }
-
-                showAlert('¡Registro exitoso! Ahora puedes iniciar sesión', 'success');
-                setTimeout(() => {
-                    toggleAuthMode();
-                    document.getElementById('email').value = email;
-                }, 1500);
-            } catch (error) {
-                showAlert('Error de conexión: ' + error.message, 'error');
-            }
-        }
-
-        function logout() {
-            authToken = null;
-            currentUser = null;
-            document.getElementById('authScreen').classList.remove('hidden');
-            document.getElementById('appScreen').classList.add('hidden');
-            document.getElementById('authForm').reset();
-        }
-
-        function showApp() {
-            document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('appScreen').classList.remove('hidden');
-            
-            document.getElementById('welcomeText').textContent = `Hola, ${currentUser.username}`;
-            
-            const roleBadge = document.getElementById('roleBadge');
-            roleBadge.textContent = currentUser.role;
-            roleBadge.className = `badge badge-${currentUser.role}`;
-            
-            // Show admin tabs
-            if (currentUser.role === 'admin') {
-                document.getElementById('usersTab').style.display = 'block';
-                document.getElementById('addBookTab').style.display = 'block';
-            }
-            
-            loadBooks();
-        }
-
-        // ==================== BOOKS FUNCTIONS ====================
-
-        async function loadBooks() {
-            try {
-                const response = await fetch(`${API_URL}/books`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-
-                const books = await response.json();
-                displayBooks(books);
-            } catch (error) {
-                console.error('Error al cargar libros:', error);
-            }
-        }
-
-        function displayBooks(books) {
-            const grid = document.getElementById('booksGrid');
-            grid.innerHTML = '';
-
-            if (books.length === 0) {
-                grid.innerHTML = '<p>No hay libros disponibles en este momento.</p>';
-                return;
-            }
-
-            books.forEach(book => {
-                const card = document.createElement('div');
-                card.className = book.isExclusive ? 'book-card exclusive' : 'book-card';
-                
-                card.innerHTML = `
-                    <div class="book-cover">📖</div>
-                    <div class="book-title">${book.title}</div>
-                    <div class="book-author">por ${book.author}</div>
-                    ${book.isExclusive ? '<span class="badge badge-vip">VIP</span>' : ''}
-                    <p style="color: #666; font-size: 14px; margin-top: 10px;">${book.description || 'Sin descripción'}</p>
-                    <p style="color: #999; font-size: 12px; margin-top: 5px;">
-                        ${book.genre || ''} ${book.year ? '• ' + book.year : ''}
-                    </p>
-                    ${currentUser.role === 'admin' ? `
-                        <div class="book-actions">
-                            <button class="btn btn-danger" onclick="deleteBook('${book._id}')">Eliminar</button>
-                        </div>
-                    ` : ''}
-                `;
-                
-                grid.appendChild(card);
-            });
-        }
-
+        // ==================== BOOKS EVENT LISTENERS ====================
+        // Los event listeners de books se mantienen aquí para conectar con las funciones de books.js
+        
         document.getElementById('bookForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            await createBook();
+            await window.createBook();
         });
 
-        async function createBook() {
-            const bookData = {
-                title: document.getElementById('bookTitle').value,
-                author: document.getElementById('bookAuthor').value,
-                description: document.getElementById('bookDescription').value,
-                year: document.getElementById('bookYear').value || null,
-                genre: document.getElementById('bookGenre').value,
-                isExclusive: document.getElementById('bookExclusive').checked
-            };
-
-            try {
-                const response = await fetch(`${API_URL}/books`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify(bookData)
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    alert('Error: ' + data.error);
-                    return;
-                }
-
-                alert('¡Libro creado exitosamente!');
-                document.getElementById('bookForm').reset();
-                showTab('books');
-                loadBooks();
-            } catch (error) {
-                alert('Error de conexión: ' + error.message);
-            }
-        }
-
-        async function deleteBook(bookId) {
-            if (!confirm('¿Estás seguro de eliminar este libro?')) return;
-
-            try {
-                const response = await fetch(`${API_URL}/books/${bookId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-
-                if (response.ok) {
-                    alert('Libro eliminado exitosamente');
-                    loadBooks();
-                }
-            } catch (error) {
-                alert('Error al eliminar: ' + error.message);
-            }
-        }
-
-        // ==================== USERS FUNCTIONS ====================
-
-        async function loadUsers() {
-            try {
-                const response = await fetch(`${API_URL}/users`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-
-                const users = await response.json();
-                displayUsers(users);
-            } catch (error) {
-                console.error('Error al cargar usuarios:', error);
-            }
-        }
-
-        function displayUsers(users) {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '';
-
-            users.forEach(user => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${user.username}</td>
-                    <td>${user.email}</td>
-                    <td><span class="badge badge-${user.role}">${user.role}</span></td>
-                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
-                    <td>
-                        <select onchange="changeUserRole('${user._id}', this.value)" style="padding: 5px; border-radius: 5px;">
-                            <option value="">Cambiar rol...</option>
-                            <option value="free">Free</option>
-                            <option value="vip">VIP</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                        <button onclick="deleteUser('${user._id}')" class="btn btn-danger" style="width: auto; padding: 5px 10px; margin-left: 10px;">Eliminar</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        async function changeUserRole(userId, newRole) {
-            if (!newRole) return;
-            
-            try {
-                const response = await fetch(`${API_URL}/users/${userId}/role`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({ role: newRole })
-                });
-
-                if (response.ok) {
-                    alert('Rol actualizado exitosamente');
-                    loadUsers();
-                }
-            } catch (error) {
-                alert('Error al cambiar rol: ' + error.message);
-            }
-        }
-
-        async function deleteUser(userId) {
-            if (!confirm('¿Estás seguro de eliminar este usuario?')) return;
-
-            try {
-                const response = await fetch(`${API_URL}/users/${userId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-
-                if (response.ok) {
-                    alert('Usuario eliminado exitosamente');
-                    loadUsers();
-                }
-            } catch (error) {
-                alert('Error al eliminar: ' + error.message);
-            }
-        }
-
-        // Create User Modal
-        function showCreateUserModal() {
-            document.getElementById('createUserModal').classList.add('active');
-        }
-
-        function closeCreateUserModal() {
-            document.getElementById('createUserModal').classList.remove('active');
-            document.getElementById('createUserForm').reset();
-        }
-
+        // ==================== USERS EVENT LISTENERS ====================
+        // Los event listeners de users se mantienen aquí para conectar con las funciones de users.js
+        
         document.getElementById('createUserForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            await createUser();
+            await window.createUser();
         });
 
-        async function createUser() {
-            const userData = {
-                username: document.getElementById('newUsername').value,
-                email: document.getElementById('newEmail').value,
-                password: document.getElementById('newPassword').value,
-                role: document.getElementById('newRole').value
-            };
-
-            try {
-                const response = await fetch(`${API_URL}/users/admin`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify(userData)
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    alert('Error: ' + data.error);
-                    return;
-                }
-
-                alert('¡Usuario creado exitosamente!');
-                closeCreateUserModal();
-                loadUsers();
-            } catch (error) {
-                alert('Error de conexión: ' + error.message);
-            }
-        }
-
-        // ==================== UI FUNCTIONS ====================
-//estaba presentando un error al crear un libro desde admin. lo reemplazo con el codigo actual
-        // function showTab(tabName) {
-        //     // Hide all tabs
-        //     document.querySelectorAll('.tab-content').forEach(content => {
-        //         content.classList.remove('active');
-        //     });
-        //     document.querySelectorAll('.tab').forEach(tab => {
-        //         tab.classList.remove('active');
-        //     });
-
-        //     // Show selected tab
-        //     document.getElementById(tabName + 'Content').classList.add('active');
-        //     event.target.classList.add('active');
-
-        //     // Load data if needed
-        //     if (tabName === 'users') {
-        //         loadUsers();
-        //     } else if (tabName === 'books') {
-        //         loadBooks();
-        //     }
-        // }
-
-function showTab(tabName, clickEvent) {
-    // Hide all tabs
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-
-    // Show selected tab
-    document.getElementById(tabName + 'Content').classList.add('active');
-    
-    // Si se llamó desde un click, activar el tab clickeado
-    // Si se llamó programáticamente, buscar el tab correspondiente
-    if (clickEvent && clickEvent.target) {
-        clickEvent.target.classList.add('active');
-    } else {
-        // Buscar el botón tab correspondiente por el atributo onclick
-        const tabs = document.querySelectorAll('.tab');
-        tabs.forEach(tab => {
-            if (tab.getAttribute('onclick')?.includes(`'${tabName}'`)) {
-                tab.classList.add('active');
-            }
-        });
-    }
-
-    // Load data if needed
-    if (tabName === 'users') {
-        loadUsers();
-    } else if (tabName === 'books') {
-        loadBooks();
-    }
-}
-
-
-
-        function showAlert(message, type) {
-            const alertDiv = document.getElementById('alertMessage');
-            alertDiv.className = `alert alert-${type}`;
-            alertDiv.textContent = message;
-            alertDiv.style.display = 'block';
-        }
-
-        function clearAlert() {
-            const alertDiv = document.getElementById('alertMessage');
-            alertDiv.style.display = 'none';
-        }
+        // ==================== INITIALIZATION ====================
+        // Todas las funciones UI ahora están en ui.js
     </script>
 </body>
 </html>
